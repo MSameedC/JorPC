@@ -1,0 +1,69 @@
+# ==========================================
+# .NET / C# / ASP.NET Core
+# ==========================================
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+publish/
+*.publishsettings
+*.pubxml
+
+# Visual Studio / Rider User-Specific Files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Unit Test Results & Coverage
+[Tt]est[Rr]esult*/
+coverage/
+*.coverage
+
+# .NET Core appsettings overrides (keep appsettings.json, ignore environment secrets)
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+# ==========================================
+# Node.js / React (Vite) / TypeScript
+# ==========================================
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build Outputs
+dist/
+dist-ssr/
+build/
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# TypeScript cache
+*.tsbuildinfo
+
+# ==========================================
+# JetBrains Rider & IDEs
+# ==========================================
+.idea/
+*.sln.iml
+.vscode/
+*.swp
+*~
+
+# ==========================================
+# Operating System Files
+# ==========================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
