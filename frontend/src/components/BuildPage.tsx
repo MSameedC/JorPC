@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBuildStore } from '../store/useBuildStore';
 import type { CategoryKey, Part } from '../types/pc';
+import { Link } from 'react-router-dom';
 
 // Mock catalog items for demonstration
 const MOCK_CATALOG: Record<CategoryKey, Part[]> = {
@@ -91,7 +92,12 @@ export const BuildPage: React.FC = () => {
         <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
             {/* Header */}
             <header className="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center sticky top-0 z-20">
-                <h1 className="text-base font-bold text-slate-900">Custom PC Builder</h1>
+                <div className="flex items-center space-x-3">
+                    <Link to="/" className="text-xs font-bold text-blue-600 hover:underline">
+                        ← Home
+                    </Link>
+                    <h1 className="text-base font-bold text-slate-900">Custom PC Builder</h1>
+                </div>
                 <div className="text-xs font-semibold text-slate-600">
                     Karachi Verified Stock
                 </div>
