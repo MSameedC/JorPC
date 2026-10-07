@@ -1,9 +1,10 @@
 import React from 'react';
 import { useBuildStore } from '../store/useBuildStore';
 import type { CategoryKey, Part } from '../types/pc';
-import { Link } from 'react-router-dom';
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
 
-// Mock catalog items for demonstration
+// Catalog items
 const MOCK_CATALOG: Record<CategoryKey, Part[]> = {
     CPU: [
         { id: 'c1', name: 'AMD Ryzen 5 7600', category: 'CPU', pricePkr: 56000, specs: { socket: 'AM5', tdpWatts: 65 } },
@@ -34,7 +35,6 @@ const MOCK_CATALOG: Record<CategoryKey, Part[]> = {
 };
 
 export const BuildPage: React.FC = () => {
-    // Subscribe to Zustand store
     const activeSlot = useBuildStore((state) => state.activeSlot);
     const selectedParts = useBuildStore((state) => state.selectedParts);
     const compatibility = useBuildStore((state) => state.compatibility);
@@ -52,36 +52,40 @@ export const BuildPage: React.FC = () => {
             <button
                 type="button"
                 onClick={() => setActiveSlot(category)}
-                className={`p-3 rounded-lg border text-left transition-all ${
+                className={`p-3 rounded-xl border text-left transition-all relative ${
                     isActive
-                        ? 'border-blue-600 bg-blue-50/60 shadow-sm ring-1 ring-blue-600'
+                        ? 'border-blue-500 bg-blue-950/40 ring-1 ring-blue-500/50 shadow-lg shadow-blue-950/50'
                         : isSelected
-                            ? 'border-slate-300 bg-white'
-                            : 'border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100'
+                            ? 'border-slate-800 bg-slate-900/80 hover:border-slate-700'
+                            : 'border-dashed border-slate-800/80 bg-slate-950/60 hover:bg-slate-900/40 hover:border-slate-700'
                 }`}
             >
                 <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-500 uppercase">{label}</span>
+                    <span className="text-xs font-mono font-bold tracking-wider text-slate-400 uppercase">
+                        {label}
+                    </span>
                     {isSelected && (
                         <span
                             onClick={(e) => {
                                 e.stopPropagation();
                                 removePart(category);
                             }}
-                            className="text-xs text-red-500 hover:text-red-700 font-bold px-1"
+                            className="text-xs text-red-400 hover:text-red-300 font-bold px-1.5 py-0.5 rounded bg-red-950/50 border border-red-800/50"
                         >
-              ✕
-            </span>
+                            ✕
+                        </span>
                     )}
                 </div>
-                <div className="mt-1">
+                <div className="mt-1.5">
                     {part ? (
                         <div>
-                            <p className="text-sm font-semibold text-slate-900 truncate">{part.name}</p>
-                            <p className="text-xs text-blue-600 font-bold mt-0.5">PKR {part.pricePkr.toLocaleString()}</p>
+                            <p className="text-sm font-semibold text-white truncate">{part.name}</p>
+                            <p className="text-xs font-mono font-bold text-blue-400 mt-0.5">
+                                PKR {part.pricePkr.toLocaleString()}
+                            </p>
                         </div>
                     ) : (
-                        <p className="text-xs text-slate-400 font-medium">+ Choose</p>
+                        <p className="text-xs font-medium text-slate-500">+ Choose Part</p>
                     )}
                 </div>
             </button>
@@ -89,56 +93,60 @@ export const BuildPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900 pb-24">
-            {/* Header */}
-            <header className="bg-white border-b border-slate-200 px-4 py-3 flex justify-between items-center sticky top-0 z-20">
-                <div className="flex items-center space-x-3">
-                    <Link to="/" className="text-xs font-bold text-blue-600 hover:underline">
-                        ← Home
-                    </Link>
-                    <h1 className="text-base font-bold text-slate-900">Custom PC Builder</h1>
-                </div>
-                <div className="text-xs font-semibold text-slate-600">
-                    Karachi Verified Stock
-                </div>
-            </header>
+        <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 overflow-x-hidden relative">
+            {/* 1. Shared Header */}
+            <Header />
 
-            <main className="max-w-xl mx-auto p-4 space-y-4">
-                {/* 1. PC Illustration Area */}
-                <div className="w-full h-36 bg-slate-900 rounded-xl flex flex-col items-center justify-center text-white shadow-inner">
+            {/* 2. Main Builder Section */}
+            <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-6 space-y-5 z-10">
+                {/* Heading */}
+                <div className="text-center space-y-1">
+                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                        Custom PC Builder
+                    </h1>
+                    <p className="text-xs sm:text-sm text-slate-400">
+                        Select hardware to test compatibility with verified Karachi store stock.
+                    </p>
+                </div>
+
+                {/* 1. PC Illustration Chassis Area */}
+                <div className="w-full h-36 bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center shadow-inner relative overflow-hidden">
+                    <div className="absolute inset-0 bg-blue-600/5 blur-2xl pointer-events-none" />
                     <div className="text-3xl mb-1">🖥️</div>
-                    <span className="text-xs text-slate-400 uppercase tracking-widest font-mono">PC Chassis Blueprint</span>
+                    <span className="text-xs text-slate-400 font-mono uppercase tracking-widest">
+                        Interactive Chassis Blueprint
+                    </span>
                     <span className="text-xs text-blue-400 font-semibold mt-1">
-            {Object.keys(selectedParts).length} of 8 Slots Mounted
-          </span>
+                        {Object.keys(selectedParts).length} of 8 Components Mounted
+                    </span>
                 </div>
 
-                {/* 2. Compatibility Alert Bar */}
+                {/* 2. Dynamic Compatibility Status Banner */}
                 <div
-                    className={`p-3 rounded-lg border text-xs flex justify-between items-center ${
+                    className={`p-3 rounded-xl border text-xs flex justify-between items-center backdrop-blur-sm ${
                         compatibility.isValid
-                            ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                            : 'bg-red-50 border-red-200 text-red-800'
+                            ? 'bg-emerald-950/40 border-emerald-800/80 text-emerald-300'
+                            : 'bg-red-950/40 border-red-800/80 text-red-300'
                     }`}
                 >
-                    <div className="flex items-center space-x-1.5 font-medium truncate pr-2">
+                    <div className="flex items-center space-x-2 truncate pr-2">
                         <span>{compatibility.isValid ? '✓' : '▲'}</span>
-                        <span className="truncate">{compatibility.message}</span>
+                        <span className="truncate font-medium">{compatibility.message}</span>
                     </div>
-                    <span className="font-mono font-bold whitespace-nowrap">
-            {compatibility.estimatedWattage} W
-          </span>
+                    <span className="font-mono font-bold whitespace-nowrap px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
+                        {compatibility.estimatedWattage} W
+                    </span>
                 </div>
 
-                {/* 3. The 2-Column Slot Grid (from your sketch) */}
-                <div className="grid grid-cols-2 gap-2.5">
-                    <div className="flex flex-col space-y-2.5">
+                {/* 3. 2-Column Slot Grid (matching your sketch) */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col space-y-3">
                         {renderSlot('Case', 'Case')}
                         {renderSlot('CPU', 'CPU')}
                         {renderSlot('Ram', 'RAM')}
                         {renderSlot('Cooler', 'CPU Cooling')}
                     </div>
-                    <div className="flex flex-col space-y-2.5">
+                    <div className="flex flex-col space-y-3">
                         {renderSlot('Mobo', 'Motherboard')}
                         {renderSlot('GPU', 'GPU')}
                         {renderSlot('SSD', 'SSD')}
@@ -147,28 +155,32 @@ export const BuildPage: React.FC = () => {
                 </div>
 
                 {/* 4. Available Compatible Parts Drawer */}
-                <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
-                    <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                            Compatible {activeSlot} Options
+                <section className="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-2.5">
+                        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                            Available {activeSlot} Options
                         </h2>
-                        <span className="text-xs text-slate-400">Techno City / Uni Center</span>
+                        <span className="text-xs text-emerald-400 font-mono">
+                            ● Techno City / Uni Center
+                        </span>
                     </div>
 
                     <div className="space-y-2">
                         {(MOCK_CATALOG[activeSlot] || []).map((part) => (
                             <div
                                 key={part.id}
-                                className="p-2.5 border border-slate-100 rounded-lg flex justify-between items-center hover:bg-slate-50 transition"
+                                className="p-3 border border-slate-800/80 rounded-xl bg-slate-950/40 hover:bg-slate-900/80 hover:border-slate-700 flex justify-between items-center transition"
                             >
                                 <div>
-                                    <h3 className="text-sm font-semibold text-slate-800">{part.name}</h3>
-                                    <p className="text-xs font-bold text-blue-600 mt-0.5">PKR {part.pricePkr.toLocaleString()}</p>
+                                    <h3 className="text-sm font-semibold text-white">{part.name}</h3>
+                                    <p className="text-xs font-mono font-bold text-blue-400 mt-0.5">
+                                        PKR {part.pricePkr.toLocaleString()}
+                                    </p>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => selectPart(part)}
-                                    className="px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                                    className="button text-xs py-1.5 px-3"
                                 >
                                     Add
                                 </button>
@@ -179,22 +191,25 @@ export const BuildPage: React.FC = () => {
             </main>
 
             {/* 5. Sticky Bottom Action Bar */}
-            <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-3 z-20 shadow-lg">
+            <div className="sticky bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 p-3.5 z-20">
                 <div className="max-w-xl mx-auto flex items-center justify-between">
                     <div>
-                        <div className="text-xs text-slate-400">Total Price</div>
-                        <div className="text-base font-black text-slate-900">
+                        <div className="text-xs text-slate-400 font-mono">Total Estimated Cost</div>
+                        <div className="text-lg font-black text-white">
                             PKR {getTotalPrice().toLocaleString()}
                         </div>
                     </div>
                     <button
                         type="button"
-                        className="px-5 py-2.5 bg-blue-600 text-white font-bold text-sm rounded-lg hover:bg-blue-700 transition"
+                        className="button text-sm py-2 px-5"
                     >
                         Review & Lock Price ➔
                     </button>
                 </div>
-            </footer>
+            </div>
+
+            {/* 6. Shared Footer */}
+            <Footer />
         </div>
     );
 };
