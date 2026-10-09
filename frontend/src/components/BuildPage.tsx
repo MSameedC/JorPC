@@ -1,8 +1,10 @@
 import React from 'react';
+import { useState } from 'react';
 import { useBuildStore } from '../store/useBuildStore';
 import type { CategoryKey, Part } from '../types/pc';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
+import { ReviewModal } from './ReviewModal';
 
 // Catalog items
 const MOCK_CATALOG: Record<CategoryKey, Part[]> = {
@@ -42,6 +44,7 @@ export const BuildPage: React.FC = () => {
     const selectPart = useBuildStore((state) => state.selectPart);
     const removePart = useBuildStore((state) => state.removePart);
     const getTotalPrice = useBuildStore((state) => state.getTotalPrice);
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
 
     const renderSlot = (category: CategoryKey, label: string) => {
         const isSelected = !!selectedParts[category];
@@ -201,6 +204,7 @@ export const BuildPage: React.FC = () => {
                     </div>
                     <button
                         type="button"
+                        onClick={() => setIsReviewOpen(true)}
                         className="button text-sm py-2 px-5"
                     >
                         Review & Lock Price ➔
@@ -210,6 +214,12 @@ export const BuildPage: React.FC = () => {
 
             {/* 6. Shared Footer */}
             <Footer />
+
+            {/* 7. Review & Lock Price Modal */}
+            <ReviewModal
+                isOpen={isReviewOpen}
+                onClose={() => setIsReviewOpen(false)}
+            />
         </div>
     );
 };
