@@ -1,16 +1,20 @@
+using Microsoft.EntityFrameworkCore;
+using JorPC.Api.Data;
 using JorPC.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Register Controllers & OpenAPI/Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register the Compatibility Engine
+// 1. Register EF Core SQLite DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection") 
+                      ?? "Data Source=jorpc.db"));
+
 builder.Services.AddSingleton<ICompatibilityEngine, CompatibilityEngine>();
 
-// Enable CORS for Vite frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -22,6 +26,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// 2. Automatically create & seed database on launch
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DbInitializer.Initialize(context);
+}
 
 if (app.Environment.IsDevelopment())
 {
