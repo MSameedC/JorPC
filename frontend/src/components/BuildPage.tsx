@@ -41,8 +41,6 @@ export const BuildPage: React.FC = () => {
                 }
             } catch (err) {
                 console.error('Failed to connect to ASP.NET API:', err);
-            } finally {
-                setIsLoading(false);
             }
         };
 

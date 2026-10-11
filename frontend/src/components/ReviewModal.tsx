@@ -95,8 +95,7 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${BUSINESS_WHATSAPP_NUMBER}?text=${encodedMessage}`;
         window.open(whatsappUrl, '_blank');
-
-        if (clearBuild) clearBuild();
+        
         onClose();
     };
 
