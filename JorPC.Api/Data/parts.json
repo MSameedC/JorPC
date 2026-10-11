@@ -103,5 +103,27 @@
     "specs": {
       "formFactor": "ATX"
     }
+  },
+  {
+    "id": "cooler-1",
+    "name": "DeepCool AG400 Single-Tower CPU Air Cooler",
+    "category": "Cooler",
+    "pricePkr": 9500,
+    "warranty": "Official Distributor",
+    "specs": {
+      "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1200"],
+      "tdpWatts": 220
+    }
+  },
+  {
+    "id": "cooler-2",
+    "name": "Thermalright Peerless Assassin 120 SE",
+    "category": "Cooler",
+    "pricePkr": 14000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1200"],
+      "tdpWatts": 265
+    }
   }
 ]

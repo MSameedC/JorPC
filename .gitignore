@@ -27,6 +27,16 @@ appsettings.*.json
 !appsettings.json
 
 # ==========================================
+# SQLite Database & Journal Files
+# ==========================================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# ==========================================
 # Node.js / React (Vite) / TypeScript
 # ==========================================
 # Dependencies
