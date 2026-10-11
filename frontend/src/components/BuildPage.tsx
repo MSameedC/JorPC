@@ -1,42 +1,16 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useBuildStore } from '../store/useBuildStore';
 import type { CategoryKey, Part } from '../types/pc';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { ReviewModal } from './ReviewModal';
 
-// Catalog items
-const MOCK_CATALOG: Record<CategoryKey, Part[]> = {
-    CPU: [
-        { id: 'c1', name: 'AMD Ryzen 5 7600', category: 'CPU', pricePkr: 56000, specs: { socket: 'AM5', tdpWatts: 65 } },
-        { id: 'c2', name: 'Intel Core i5-13400', category: 'CPU', pricePkr: 61000, specs: { socket: 'LGA1700', tdpWatts: 65 } },
-    ],
-    Mobo: [
-        { id: 'm1', name: 'MSI PRO B650M-A WiFi', category: 'Mobo', pricePkr: 48000, specs: { socket: 'AM5' } },
-        { id: 'm2', name: 'ASUS Prime B760M-A', category: 'Mobo', pricePkr: 44000, specs: { socket: 'LGA1700' } },
-    ],
-    GPU: [
-        { id: 'g1', name: 'Palit RTX 4060 Dual 8GB', category: 'GPU', pricePkr: 98000, specs: { tdpWatts: 115, lengthMm: 242 } },
-    ],
-    Case: [
-        { id: 'cs1', name: 'Thunder Armor ATX Gaming', category: 'Case', pricePkr: 14500, specs: { maxGpuLengthMm: 340 } },
-    ],
-    Ram: [
-        { id: 'r1', name: 'Corsair Vengeance 32GB (16x2) DDR5', category: 'Ram', pricePkr: 32000, specs: { memoryType: 'DDR5' } },
-    ],
-    SSD: [
-        { id: 's1', name: 'Kingston NV2 1TB NVMe M.2', category: 'SSD', pricePkr: 18500, specs: {} },
-    ],
-    Cooler: [
-        { id: 'cl1', name: 'Thermalright Peerless Assassin 120 SE', category: 'Cooler', pricePkr: 13500, specs: {} },
-    ],
-    Psu: [
-        { id: 'p1', name: 'XPG Pylon 650W 80+ Bronze', category: 'Psu', pricePkr: 17500, specs: { wattage: 650 } },
-    ],
-};
-
 export const BuildPage: React.FC = () => {
+    const [catalog, setCatalog] = useState<Record<string, Part[]>>({});
+    const [isLoading, setIsLoading] = useState(true);
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
+
     const activeSlot = useBuildStore((state) => state.activeSlot);
     const selectedParts = useBuildStore((state) => state.selectedParts);
     const compatibility = useBuildStore((state) => state.compatibility);
@@ -44,7 +18,37 @@ export const BuildPage: React.FC = () => {
     const selectPart = useBuildStore((state) => state.selectPart);
     const removePart = useBuildStore((state) => state.removePart);
     const getTotalPrice = useBuildStore((state) => state.getTotalPrice);
-    const [isReviewOpen, setIsReviewOpen] = useState(false);
+
+    useEffect(() => {
+        const fetchCatalog = async () => {
+            try {
+                const response = await fetch('/api/catalog');
+                if (response.ok) {
+                    const data: Part[] = await response.json();
+
+                    // Group parts by CategoryKey string
+                    const grouped: Record<string, Part[]> = {};
+                    data.forEach((item) => {
+                        // ASP.NET returns enum as integer or string depending on serializer
+                        const catKey = typeof item.category === 'number'
+                            ? ['Case', 'Mobo', 'CPU', 'GPU', 'Ram', 'SSD', 'Cooler', 'Psu'][item.category]
+                            : item.category;
+
+                        if (!grouped[catKey]) grouped[catKey] = [];
+                        grouped[catKey].push({ ...item, category: catKey as CategoryKey });
+                    });
+
+                    setCatalog(grouped);
+                }
+            } catch (err) {
+                console.error('Failed to connect to ASP.NET API:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCatalog();
+    }, []);
 
     const renderSlot = (category: CategoryKey, label: string) => {
         const isSelected = !!selectedParts[category];
@@ -169,7 +173,7 @@ export const BuildPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                        {(MOCK_CATALOG[activeSlot] || []).map((part) => (
+                        {(catalog[activeSlot] || []).map((part) => (
                             <div
                                 key={part.id}
                                 className="p-3 border border-slate-800/80 rounded-xl bg-slate-950/40 hover:bg-slate-900/80 hover:border-slate-700 flex justify-between items-center transition"
