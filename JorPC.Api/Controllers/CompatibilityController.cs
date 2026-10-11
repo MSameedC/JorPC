@@ -6,19 +6,12 @@ namespace JorPC.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class CompatibilityController : ControllerBase
+public class CompatibilityController(ICompatibilityEngine engine) : ControllerBase
 {
-    private readonly ICompatibilityEngine _engine;
-
-    public CompatibilityController(ICompatibilityEngine engine)
-    {
-        _engine = engine;
-    }
-
     [HttpPost("validate")]
     public ActionResult<CompatibilityReport> Validate([FromBody] BuildValidationRequest request)
     {
-        var result = _engine.Validate(request);
+        var result = engine.Validate(request);
         return Ok(result);
     }
 }

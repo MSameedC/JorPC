@@ -18,6 +18,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Update="Data\parts.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
