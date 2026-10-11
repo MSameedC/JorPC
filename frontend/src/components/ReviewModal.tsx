@@ -1,199 +1,219 @@
 import React, { useState } from 'react';
 import { useBuildStore } from '../store/useBuildStore';
 
+// Put your store's WhatsApp number here (Country code 92, without '+' or leading '0')
+const BUSINESS_WHATSAPP_NUMBER = '923394737377';
+const ASSEMBLY_FEE_PKR = 3500;
+
 interface ReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
 
-const KARACHI_AREAS = [
-    'DHA (Phase 1–8)',
-    'Clifton',
-    'Gulshan-e-Iqbal',
-    'Gulistan-e-Johar',
-    'North Nazimabad',
-    'PECHS / Tariq Road',
-    'Federal B Area',
-    'Bahria Town Karachi',
-    'Malir Cantt',
-    'Saddar / I.I. Chundrigar',
-    'Other (Karachi)',
-];
-
-// Replace with your business WhatsApp number (format: 923XXXXXXXXX without + or dashes)
-const BUSINESS_WHATSAPP_NUMBER = '923001234567';
-
 export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose }) => {
-    const selectedParts = useBuildStore((state) => state.selectedParts);
-    const getTotalPrice = useBuildStore((state) => state.getTotalPrice);
-    const estimatedWattage = useBuildStore((state) => state.compatibility.estimatedWattage);
+    const { selectedParts, clearBuild } = useBuildStore();
 
     const [customerName, setCustomerName] = useState('');
     const [phone, setPhone] = useState('');
-    const [area, setArea] = useState(KARACHI_AREAS[0]);
+    const [area, setArea] = useState('');
+    const [address, setAddress] = useState('');
     const [includeAssembly, setIncludeAssembly] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     if (!isOpen) return null;
 
-    const partsTotal = getTotalPrice();
-    const assemblyFee = includeAssembly ? 3500 : 0;
-    const finalTotal = partsTotal + assemblyFee;
+    // Extract selected parts and calculate costs & power
+    const partsList = Object.values(selectedParts).filter(Boolean);
+    const partsTotal = partsList.reduce((acc, part) => acc + (part?.pricePkr || 0), 0);
+    const finalTotal = partsTotal + (includeAssembly ? ASSEMBLY_FEE_PKR : 0);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // Calculate estimated power consumption
+    const estimatedWattage = partsList.reduce((acc, part) => {
+        return acc + (part?.specs?.tdpWatts || part?.specs?.wattage || 0);
+    }, 50); // 50W baseline for fans/motherboard idle
+
+    // Format parts text for WhatsApp
+    const partsListText = partsList
+        .map((p) => `• *${p.category}:* ${p.name} — PKR ${p.pricePkr.toLocaleString()}`)
+        .join('\n');
+
+    const handleWhatsAppOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Format selected parts list
-        const partsListText = Object.entries(selectedParts)
-            .filter(([_, part]) => !!part)
-            .map(([cat, part]) => `• *${cat}:* ${part?.name} (PKR ${part?.pricePkr.toLocaleString()})`)
-            .join('\n');
+        if (!customerName.trim() || !phone.trim() || !area.trim()) {
+            alert('Please fill in your name, phone number, and delivery area.');
+            return;
+        }
 
-        // Build the WhatsApp message
-        const message =
-            `*NEW BUILD QUOTE REQUEST — JorPC*
+        setIsSubmitting(true);
+        let orderRef = '';
+
+        // 1. Try to record order in SQLite backend first
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerName,
+                    customerPhone: phone,
+                    shippingAddress: area,
+                    city: area,
+                    notes: includeAssembly ? 'Assembly Requested (PKR 3,500)' : 'Parts Only (DIY)',
+                    partIds: partsList.map((p) => p.id),
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                orderRef = `\n*Order Ref:* ${data.orderId}`;
+            }
+        } catch (err) {
+            console.warn('Backend order recording skipped, proceeding to WhatsApp:', err);
+        } finally {
+            setIsSubmitting(false);
+        }
+
+        // 2. Format WhatsApp Message
+        const cleanPhone = phone.replace(/^(\+92|0)/, '');
+        const message = `*NEW BUILD QUOTE REQUEST — JorPC*${orderRef}
 ----------------------------------
 *Customer:* ${customerName}
-*Phone:* +92${phone.replace(/^(\+92|0)/, '')}
+*Phone:* +92${cleanPhone}
 *Delivery Area:* ${area}
+*Delivery Address:* ${address}
 
 *Selected Components:*
 ${partsListText || '• None selected'}
 
-*Service:* ${includeAssembly ? 'Professional Assembly & Testing (PKR 3,500)' : 'Parts Only (DIY)'}
-*Estimated Power:* ${estimatedWattage}W
+*Service:* ${includeAssembly ? `Professional Assembly & Testing (PKR ${ASSEMBLY_FEE_PKR.toLocaleString()})` : 'Parts Only (DIY)'}
+*Estimated Power:* ~${estimatedWattage}W
 *Total Estimated Price:* *PKR ${finalTotal.toLocaleString()}*
 ----------------------------------
 _Please confirm current physical stock across Techno City / Uni Center and reply with locked invoice._`;
 
-        // Open WhatsApp
+        // 3. Open WhatsApp Web or App
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${BUSINESS_WHATSAPP_NUMBER}?text=${encodedMessage}`;
         window.open(whatsappUrl, '_blank');
+
+        if (clearBuild) clearBuild();
         onClose();
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-                {/* Modal Header */}
-                <div className="px-5 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
-                    <div>
-                        <h2 className="text-base font-bold text-white">Review & Lock In Your Build</h2>
-                        <p className="text-xs text-slate-400">Karachi Partner Shop Stock Check</p>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="text-slate-400 hover:text-white text-lg font-bold px-2 py-0.5 rounded-lg hover:bg-slate-800"
-                    >
-                        ✕
-                    </button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+            <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-xl bg-slate-900 p-6 text-white shadow-2xl border border-slate-800">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                    <h2 className="text-xl font-bold">Review & Request Quote</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white">✕</button>
                 </div>
 
-                {/* Scrollable Form Body */}
-                <form onSubmit={handleSubmit} className="p-5 space-y-4 overflow-y-auto flex-1 text-xs sm:text-sm">
-                    {/* 1. Itemized Parts Summary */}
-                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3.5 space-y-2">
-                        <div className="flex justify-between items-center text-xs font-mono font-bold text-slate-400 uppercase">
-                            <span>Configured Parts</span>
-                            <span>{Object.keys(selectedParts).length} Items</span>
+                {/* Components Overview */}
+                <div className="mb-4 max-h-44 overflow-y-auto rounded-lg bg-slate-950/60 p-3 border border-slate-800 space-y-2">
+                    {partsList.map((part) => (
+                        <div key={part.id} className="flex justify-between text-xs sm:text-sm">
+                            <span className="text-slate-300 font-medium truncate max-w-[70%]">{part.name}</span>
+                            <span className="text-slate-400 font-mono">PKR {part.pricePkr.toLocaleString()}</span>
                         </div>
-                        <div className="divide-y divide-slate-800/60 max-h-36 overflow-y-auto pr-1">
-                            {Object.entries(selectedParts).map(([category, part]) => (
-                                <div key={category} className="py-1.5 flex justify-between items-center">
-                  <span className="text-slate-300 truncate max-w-[220px]">
-                    <strong className="text-slate-400">{category}:</strong> {part?.name}
-                  </span>
-                                    <span className="font-mono text-slate-200">
-                    PKR {part?.pricePkr.toLocaleString()}
-                  </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    ))}
+                </div>
 
-                    {/* 2. Assembly Service Add-on */}
-                    <label className="flex items-center space-x-3 p-3 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700 transition">
+                {/* Assembly Option */}
+                <div className="mb-4 flex items-center justify-between rounded-lg bg-slate-800/50 p-3 border border-slate-700">
+                    <div>
+                        <div className="text-sm font-semibold text-white">Professional Assembly & Stress-Testing</div>
+                        <div className="text-xs text-slate-400">Cable management, BIOS update, thermal stress test</div>
+                    </div>
+                    <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
                             checked={includeAssembly}
                             onChange={(e) => setIncludeAssembly(e.target.checked)}
-                            className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 bg-slate-900 border-slate-700"
+                            className="h-4 w-4 rounded accent-emerald-500 cursor-pointer"
                         />
-                        <div className="flex-1">
-                            <div className="font-semibold text-white">Professional Assembly & Stress Testing</div>
-                            <div className="text-xs text-slate-400">Cable management, BIOS update & 2-hr thermal benchmark</div>
-                        </div>
-                        <span className="font-mono text-blue-400 font-bold">+PKR 3,500</span>
+                        <span className="ml-2 text-xs font-mono text-emerald-400">+PKR 3,500</span>
                     </label>
+                </div>
 
-                    {/* 3. Customer Contact Inputs */}
-                    <div className="space-y-3">
+                {/* Totals & Power */}
+                <div className="mb-5 flex justify-between items-center rounded-lg bg-slate-800 p-3 border border-slate-700">
+                    <div>
+                        <span className="text-xs uppercase text-slate-400">Estimated Power</span>
+                        <div className="text-sm font-bold text-sky-400">~{estimatedWattage} Watts</div>
+                    </div>
+                    <div className="text-right">
+                        <span className="text-xs uppercase text-slate-400">Total Price</span>
+                        <div className="text-lg font-bold text-emerald-400">PKR {finalTotal.toLocaleString()}</div>
+                    </div>
+                </div>
+
+                {/* Customer Info Form */}
+                <form onSubmit={handleWhatsAppOrder} className="space-y-3">
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">Your Name *</label>
+                        <input
+                            type="text"
+                            required
+                            value={customerName}
+                            onChange={(e) => setCustomerName(e.target.value)}
+                            placeholder="e.g. Sameed"
+                            className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Your Full Name</label>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">WhatsApp Number *</label>
+                            <input
+                                type="tel"
+                                required
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                placeholder="0300-1234567"
+                                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-slate-400 mb-1">City / Delivery Area *</label>
                             <input
                                 type="text"
                                 required
-                                placeholder="Muhammad Sameed"
-                                value={customerName}
-                                onChange={(e) => setCustomerName(e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">WhatsApp Number</label>
-                            <div className="flex">
-                <span className="inline-flex items-center px-3 bg-slate-800 border border-r-0 border-slate-700 rounded-l-lg text-slate-400 text-xs">
-                  +92
-                </span>
-                                <input
-                                    type="tel"
-                                    required
-                                    placeholder="3001234567"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="flex-1 px-3 py-2 bg-slate-950 border border-slate-800 rounded-r-lg text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-semibold text-slate-300 mb-1">Karachi Delivery Town</label>
-                            <select
                                 value={area}
                                 onChange={(e) => setArea(e.target.value)}
-                                className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-blue-500 text-xs sm:text-sm"
-                            >
-                                {KARACHI_AREAS.map((loc) => (
-                                    <option key={loc} value={loc}>
-                                        {loc}
-                                    </option>
-                                ))}
-                            </select>
+                                placeholder="e.g. Larkana / Karachi"
+                                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                            />
                         </div>
                     </div>
 
-                    {/* Total Summary */}
-                    <div className="p-3 bg-blue-950/20 border border-blue-900/40 rounded-xl flex justify-between items-center">
-                        <div>
-                            <span className="text-xs text-slate-400">Total Verified Price</span>
-                            <p className="text-lg font-black text-white">PKR {finalTotal.toLocaleString()}</p>
-                        </div>
-                        <span className="text-xs text-emerald-400 font-medium">● 0% Upfront to Lock</span>
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1">Delivery Address *</label>
+                        <input
+                            type="text"
+                            required
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="e.g. House/Appartment number, Street name"
+                            className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                        />
                     </div>
 
-                    {/* Submit Button */}
-                    <button
-                        type="submit"
-                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition flex items-center justify-center space-x-2 shadow-lg shadow-emerald-950"
-                    >
-                        <span>Send Quote to WhatsApp</span>
-                        <span>➔</span>
-                    </button>
-
-                    <p className="text-center text-[11px] text-slate-500">
-                        No payment taken now. We verify physical shop availability and send your confirmed invoice via WhatsApp.
-                    </p>
+                    <div className="pt-3 flex justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || partsList.length === 0}
+                            className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 flex items-center gap-2 transition"
+                        >
+                            {isSubmitting ? 'Recording...' : 'Send Quote via WhatsApp 💬'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
