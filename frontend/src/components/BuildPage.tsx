@@ -8,7 +8,6 @@ import { ReviewModal } from './ReviewModal';
 
 export const BuildPage: React.FC = () => {
     const [catalog, setCatalog] = useState<Record<string, Part[]>>({});
-    const [isLoading, setIsLoading] = useState(true);
     const [isReviewOpen, setIsReviewOpen] = useState(false);
 
     const activeSlot = useBuildStore((state) => state.activeSlot);

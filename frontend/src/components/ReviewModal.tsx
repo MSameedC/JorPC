@@ -11,7 +11,7 @@ interface ReviewModalProps {
 }
 
 export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose }) => {
-    const { selectedParts, clearBuild } = useBuildStore();
+    const { selectedParts } = useBuildStore();
 
     const [customerName, setCustomerName] = useState('');
     const [phone, setPhone] = useState('');
