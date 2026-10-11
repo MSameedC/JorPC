@@ -7,10 +7,13 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["JorPC.Api/JorPC.Api.csproj", "JorPC.Api/"]
-RUN dotnet restore "JorPC.Api/JorPC.Api.csproj"
+
+# Project file copy & restore
+COPY ["JorPC.Api.csproj", "./"]
+RUN dotnet restore "./JorPC.Api.csproj"
+
+# Copy source and build
 COPY . .
-WORKDIR "/src/JorPC.Api"
 RUN dotnet build "./JorPC.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
