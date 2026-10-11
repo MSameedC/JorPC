@@ -25,5 +25,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Part>()
             .Property(p => p.Category)
             .HasConversion<string>();
+        
+        modelBuilder.Entity<Order>()
+            .Property(o => o.PartIds)
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>()
+            );
     }
 }

@@ -1,5 +1,5 @@
 using System.Text.Json;
-using System.Text.Json.Serialization; // <-- 1. Add this namespace
+using System.Text.Json.Serialization;
 using JorPC.Api.Models;
 
 namespace JorPC.Api.Data
@@ -23,7 +23,7 @@ namespace JorPC.Api.Data
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() } // <-- 2. Enable string enum conversion
+                Converters = { new JsonStringEnumConverter() } // Enable string enum conversion
             };
 
             var parts = JsonSerializer.Deserialize<List<Part>>(jsonContent, options);

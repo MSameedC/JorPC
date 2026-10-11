@@ -1,17 +1,22 @@
-namespace JorPC.Api.Models;
+using System;
+using System.Collections.Generic;
 
-public class Order
+namespace JorPC.Api.Models
 {
-    public int Id { get; set; }
-    public string OrderReference { get; set; } = string.Empty; // e.g. "ORD-KHI-1001"
-    public string CustomerName { get; set; } = string.Empty;
-    public string CustomerPhone { get; set; } = string.Empty;
-    public string DeliveryArea { get; set; } = string.Empty;
-    public bool IncludeAssembly { get; set; }
-    public decimal PartsTotalPkr { get; set; }
-    public decimal ServiceFeePkr { get; set; }
-    public decimal TotalPkr { get; set; }
-    public string SelectedPartsJson { get; set; } = string.Empty; // JSON snapshot of parts
-    public string Status { get; set; } = "PendingVerification";   // PendingVerification, Verified, DepositPaid, Completed
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public class Order
+    {
+        public string Id { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
+        public string CustomerPhone { get; set; } = string.Empty;
+        public string? CustomerEmail { get; set; }
+        public string ShippingAddress { get; set; } = string.Empty;
+        public string City { get; set; } = string.Empty;
+        public string? Notes { get; set; }
+        public decimal TotalPkr { get; set; }
+        public string Status { get; set; } = "Pending";
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Stores the list of part IDs (e.g., ["cpu-1", "gpu-1"]) as a comma-separated string or relationship
+        public List<string> PartIds { get; set; } = new();
+    }
 }
