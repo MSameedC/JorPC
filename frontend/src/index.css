@@ -12,6 +12,54 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* ===================================================
+   COMMON REUSABLE COMPONENT CLASSES
+   =================================================== */
+
+/* Primary Button (Blue) */
 .button {
-    @apply inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-lg transition shadow-sm;
+    @apply inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-lg transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Success / WhatsApp Action Button (Emerald) */
+.button-success {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Secondary / Ghost Button */
+.button-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm rounded-lg transition border border-slate-700;
+}
+
+/* Standard Dark Card / Container */
+.card {
+    @apply bg-slate-900/80 border border-slate-800 rounded-xl p-4 transition;
+}
+
+/* Form Input & Textarea */
+.input {
+    @apply w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition
+}
+
+/* Monospace Price Tag */
+.price-tag {
+    @apply font-mono font-bold text-blue-400 text-xs sm:text-sm;
+}
+
+/* ===================================================
+   CUSTOM DARK SCROLLBAR (Prevents ugly OS scrollbars)
+   =================================================== */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #020617; /* slate-950 */
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b; /* slate-800 */
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #334155; /* slate-700 */
 }

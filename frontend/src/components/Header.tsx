@@ -11,10 +11,16 @@ export const Header: React.FC = () => {
             <div className="flex items-center space-x-4 text-xs font-semibold text-slate-400">
                 <span className="hidden sm:inline">Karachi Verified Hardware</span>
                 <Link
-                    to="/build"
+                    to="/"
                     className="px-3 py-1.5 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition"
                 >
-                    Custom Builder
+                    Home
+                </Link>
+                <Link
+                    to="/build"
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md transition"
+                >
+                    Build
                 </Link>
             </div>
         </header>
