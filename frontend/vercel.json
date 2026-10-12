@@ -2,7 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
+<<<<<<< HEAD
       "destination": "https://jorpc-p5fdp2fq.b4a.run/api/:path*"
+=======
+      "destination": "https://jorpc-5ik72oyg.b4a.run/api/:path*"
+>>>>>>> origin/dev
     },
     {
       "source": "/(.*)",
