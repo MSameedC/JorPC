@@ -37,7 +37,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose }) => 
         .map((p) => `• *${p.category}:* ${p.name} — PKR ${p.pricePkr.toLocaleString()}`)
         .join('\n');
 
-    const handleWhatsAppOrder = async (e: React.FormEvent) => {
+    const handleWhatsAppOrder = async (e: React.SubmitEvent) => {
         e.preventDefault();
 
         if (!customerName.trim() || !phone.trim() || !area.trim()) {
@@ -89,7 +89,7 @@ ${partsListText || '• None selected'}
 *Estimated Power:* ~${estimatedWattage}W
 *Total Estimated Price:* *PKR ${finalTotal.toLocaleString()}*
 ----------------------------------
-_Please confirm current physical stock across Techno City / Uni Center and reply with locked invoice._`;
+_Please confirm current physical stock across Techno City / Uni Center and reply with locked invoice._\;`
 
         // 3. Open WhatsApp Web or App
         const encodedMessage = encodeURIComponent(message);
@@ -112,7 +112,7 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
                     {partsList.map((part) => (
                         <div key={part.id} className="flex justify-between text-xs sm:text-sm">
                             <span className="text-slate-300 font-medium truncate max-w-[70%]">{part.name}</span>
-                            <span className="text-slate-400 font-mono">PKR {part.pricePkr.toLocaleString()}</span>
+                            <span className="price-tag">PKR {part.pricePkr.toLocaleString()}</span>
                         </div>
                     ))}
                 </div>
@@ -155,8 +155,8 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
                             required
                             value={customerName}
                             onChange={(e) => setCustomerName(e.target.value)}
-                            placeholder="e.g. Sameed"
-                            className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                            placeholder="e.g. Muhammad Amir"
+                            className="input"
                         />
                     </div>
 
@@ -169,7 +169,7 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                                 placeholder="0300-1234567"
-                                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                                className="input"
                             />
                         </div>
                         <div>
@@ -180,7 +180,7 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
                                 value={area}
                                 onChange={(e) => setArea(e.target.value)}
                                 placeholder="e.g. Larkana / Karachi"
-                                className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                                className="input"
                             />
                         </div>
                     </div>
@@ -193,7 +193,7 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
                             placeholder="e.g. House/Appartment number, Street name"
-                            className="w-full rounded-lg bg-slate-800 border border-slate-700 p-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
+                            className="input"
                         />
                     </div>
 
@@ -201,14 +201,14 @@ _Please confirm current physical stock across Techno City / Uni Center and reply
                         <button
                             type="button"
                             onClick={onClose}
-                            className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-300 hover:bg-slate-700"
+                            className="button-secondary"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting || partsList.length === 0}
-                            className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 flex items-center gap-2 transition"
+                            className="button-success"
                         >
                             {isSubmitting ? 'Recording...' : 'Send Quote via WhatsApp 💬'}
                         </button>

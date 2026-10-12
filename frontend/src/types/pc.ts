@@ -8,6 +8,10 @@ export type CategoryKey =
     | 'Cooler'
     | 'Psu';
 
+export const REQUIRED_CATEGORIES: CategoryKey[] = [
+    'Case', 'Mobo', 'CPU', 'GPU', 'Ram', 'SSD', 'Cooler', 'Psu'
+];
+
 export interface Part {
     id: string;
     name: string;

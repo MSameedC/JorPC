@@ -1,0 +1,129 @@
+[
+  {
+    "id": "cpu-1",
+    "name": "AMD Ryzen 5 7600X",
+    "category": "CPU",
+    "pricePkr": 65000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "socket": "AM5",
+      "tdpWatts": 105
+    }
+  },
+  {
+    "id": "cpu-2",
+    "name": "Intel Core i5-14600K",
+    "category": "CPU",
+    "pricePkr": 85000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "socket": "LGA1700",
+      "tdpWatts": 125
+    }
+  },
+  {
+    "id": "cpu-3",
+    "name": "AMD Ryzen 9 9950X",
+    "category": "CPU",
+    "pricePkr": 175000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "socket": "AM5",
+      "tdpWatts": 170
+    }
+  },
+  {
+    "id": "mobo-1",
+    "name": "MSI B650 Gaming Plus WiFi",
+    "category": "Mobo",
+    "pricePkr": 52000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "socket": "AM5",
+      "memoryType": "DDR5",
+      "formFactor": "ATX"
+    }
+  },
+  {
+    "id": "mobo-2",
+    "name": "Gigabyte B760 Gaming X AX",
+    "category": "Mobo",
+    "pricePkr": 48000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "socket": "LGA1700",
+      "memoryType": "DDR5",
+      "formFactor": "ATX"
+    }
+  },
+  {
+    "id": "ram-1",
+    "name": "Corsair Vengeance 32GB (2x16GB) DDR5-6000",
+    "category": "Ram",
+    "pricePkr": 32000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "memoryType": "DDR5"
+    }
+  },
+  {
+    "id": "gpu-1",
+    "name": "NVIDIA GeForce RTX 4070 Super 12GB",
+    "category": "GPU",
+    "pricePkr": 195000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "wattage": 220
+    }
+  },
+  {
+    "id": "ssd-1",
+    "name": "Kingston KC3000 1TB NVMe M.2 SSD",
+    "category": "SSD",
+    "pricePkr": 25000,
+    "warranty": "Official Distributor",
+    "specs": {}
+  },
+  {
+    "id": "psu-1",
+    "name": "Corsair RM750e 750W Gold Fully Modular",
+    "category": "Psu",
+    "pricePkr": 31000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "wattage": 750
+    }
+  },
+  {
+    "id": "case-1",
+    "name": "NZXT H5 Flow ATX Mid-Tower",
+    "category": "Case",
+    "pricePkr": 26000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "formFactor": "ATX"
+    }
+  },
+  {
+    "id": "cooler-1",
+    "name": "DeepCool AG400 Single-Tower CPU Air Cooler",
+    "category": "Cooler",
+    "pricePkr": 9500,
+    "warranty": "Official Distributor",
+    "specs": {
+      "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1200"],
+      "tdpWatts": 220
+    }
+  },
+  {
+    "id": "cooler-2",
+    "name": "Thermalright Peerless Assassin 120 SE",
+    "category": "Cooler",
+    "pricePkr": 14000,
+    "warranty": "Official Distributor",
+    "specs": {
+      "supportedSockets": ["AM5", "AM4", "LGA1700", "LGA1200"],
+      "tdpWatts": 265
+    }
+  }
+]

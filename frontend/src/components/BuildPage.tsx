@@ -1,13 +1,30 @@
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBuildStore } from '../store/useBuildStore';
-import type { CategoryKey, Part } from '../types/pc';
-import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
+import { REQUIRED_CATEGORIES, type CategoryKey, type Part } from '../types/pc';
+import { Header } from './Header';
+import { Footer } from './Footer';
 import { ReviewModal } from './ReviewModal';
+import fallbackParts from '../data/parts.json';
+
+// Helper to group parts by CategoryKey
+const groupParts = (partsList: Part[]): Record<string, Part[]> => {
+    const grouped: Record<string, Part[]> = {};
+    partsList.forEach((item) => {
+        const catKey = typeof item.category === 'number'
+            ? REQUIRED_CATEGORIES[item.category]
+            : item.category;
+
+        if (!grouped[catKey]) grouped[catKey] = [];
+        grouped[catKey].push({ ...item, category: catKey as CategoryKey });
+    });
+    return grouped;
+};
 
 export const BuildPage: React.FC = () => {
-    const [catalog, setCatalog] = useState<Record<string, Part[]>>({});
+    // Initialize immediately with bundled fallback parts
+    const [catalog, setCatalog] = useState<Record<string, Part[]>>(() =>
+        groupParts(fallbackParts as Part[])
+    );
     const [isReviewOpen, setIsReviewOpen] = useState(false);
 
     const activeSlot = useBuildStore((state) => state.activeSlot);
@@ -18,29 +35,23 @@ export const BuildPage: React.FC = () => {
     const removePart = useBuildStore((state) => state.removePart);
     const getTotalPrice = useBuildStore((state) => state.getTotalPrice);
 
+    // Read completeness directly from store (DRY)
+    const missingCategories = REQUIRED_CATEGORIES.filter((cat) => !selectedParts[cat]);
+    const isComplete = missingCategories.length === 0;
+
+    // Fetch live API data when available
     useEffect(() => {
         const fetchCatalog = async () => {
             try {
                 const response = await fetch('/api/catalog');
                 if (response.ok) {
                     const data: Part[] = await response.json();
-
-                    // Group parts by CategoryKey string
-                    const grouped: Record<string, Part[]> = {};
-                    data.forEach((item) => {
-                        // ASP.NET returns enum as integer or string depending on serializer
-                        const catKey = typeof item.category === 'number'
-                            ? ['Case', 'Mobo', 'CPU', 'GPU', 'Ram', 'SSD', 'Cooler', 'Psu'][item.category]
-                            : item.category;
-
-                        if (!grouped[catKey]) grouped[catKey] = [];
-                        grouped[catKey].push({ ...item, category: catKey as CategoryKey });
-                    });
-
-                    setCatalog(grouped);
+                    if (Array.isArray(data) && data.length > 0) {
+                        setCatalog(groupParts(data));
+                    }
                 }
             } catch (err) {
-                console.error('Failed to connect to ASP.NET API:', err);
+                console.log('Backend offline, using bundled catalog:', err);
             }
         };
 
@@ -84,7 +95,7 @@ export const BuildPage: React.FC = () => {
                     {part ? (
                         <div>
                             <p className="text-sm font-semibold text-white truncate">{part.name}</p>
-                            <p className="text-xs font-mono font-bold text-blue-400 mt-0.5">
+                            <p className="price-tag mt-0.5">
                                 PKR {part.pricePkr.toLocaleString()}
                             </p>
                         </div>
@@ -98,12 +109,9 @@ export const BuildPage: React.FC = () => {
 
     return (
         <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 overflow-x-hidden relative">
-            {/* 1. Shared Header */}
             <Header />
 
-            {/* 2. Main Builder Section */}
             <main className="flex-1 max-w-xl w-full mx-auto p-4 sm:p-6 space-y-5 z-10">
-                {/* Heading */}
                 <div className="text-center space-y-1">
                     <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
                         Custom PC Builder
@@ -113,8 +121,8 @@ export const BuildPage: React.FC = () => {
                     </p>
                 </div>
 
-                {/* 1. PC Illustration Chassis Area */}
-                <div className="w-full h-36 bg-gradient-to-b from-slate-900 to-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center shadow-inner relative overflow-hidden">
+                {/* PC Chassis Illustration Area */}
+                <div className="w-full h-36 bg-linear-to-b from-slate-900 to-slate-950 rounded-2xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center shadow-inner relative overflow-hidden">
                     <div className="absolute inset-0 bg-blue-600/5 blur-2xl pointer-events-none" />
                     <div className="text-3xl mb-1">🖥️</div>
                     <span className="text-xs text-slate-400 font-mono uppercase tracking-widest">
@@ -125,7 +133,7 @@ export const BuildPage: React.FC = () => {
                     </span>
                 </div>
 
-                {/* 2. Dynamic Compatibility Status Banner */}
+                {/* Compatibility Status Banner */}
                 <div
                     className={`p-3 rounded-xl border text-xs flex justify-between items-center backdrop-blur-sm ${
                         compatibility.isValid
@@ -142,7 +150,7 @@ export const BuildPage: React.FC = () => {
                     </span>
                 </div>
 
-                {/* 3. 2-Column Slot Grid (matching your sketch) */}
+                {/* 2-Column Slot Grid */}
                 <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col space-y-3">
                         {renderSlot('Case', 'Case')}
@@ -158,8 +166,8 @@ export const BuildPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* 4. Available Compatible Parts Drawer */}
-                <section className="bg-slate-900/60 border border-slate-800/90 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
+                {/* Available Parts Drawer */}
+                <section className="card p-4 sm:p-5 shadow-lg space-y-3">
                     <div className="flex justify-between items-center border-b border-slate-800 pb-2.5">
                         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-300">
                             Available {activeSlot} Options
@@ -177,7 +185,7 @@ export const BuildPage: React.FC = () => {
                             >
                                 <div>
                                     <h3 className="text-sm font-semibold text-white">{part.name}</h3>
-                                    <p className="text-xs font-mono font-bold text-blue-400 mt-0.5">
+                                    <p className="price-tag mt-0.5">
                                         PKR {part.pricePkr.toLocaleString()}
                                     </p>
                                 </div>
@@ -194,29 +202,35 @@ export const BuildPage: React.FC = () => {
                 </section>
             </main>
 
-            {/* 5. Sticky Bottom Action Bar */}
+            {/* Sticky Bottom Action Bar with Validation */}
             <div className="sticky bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 p-3.5 z-20">
                 <div className="max-w-xl mx-auto flex items-center justify-between">
                     <div>
-                        <div className="text-xs text-slate-400 font-mono">Total Estimated Cost</div>
+                        <div className="text-xs font-mono">
+                            {isComplete ? (
+                                <span className="text-emerald-400 font-semibold">✓ All 8 Components Selected</span>
+                            ) : (
+                                <span className="text-amber-400">Missing {missingCategories.length} component(s)</span>
+                            )}
+                        </div>
                         <div className="text-lg font-black text-white">
                             PKR {getTotalPrice().toLocaleString()}
                         </div>
                     </div>
                     <button
                         type="button"
+                        disabled={!isComplete || !compatibility.isValid}
                         onClick={() => setIsReviewOpen(true)}
-                        className="button text-sm py-2 px-5"
+                        className="button text-sm py-2 px-5 disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={!isComplete ? `Missing: ${missingCategories.join(', ')}` : ''}
                     >
-                        Review & Lock Price ➔
+                        {isComplete ? 'Review & Lock Price ➔' : `Select All (${8 - missingCategories.length}/8)`}
                     </button>
                 </div>
             </div>
 
-            {/* 6. Shared Footer */}
             <Footer />
 
-            {/* 7. Review & Lock Price Modal */}
             <ReviewModal
                 isOpen={isReviewOpen}
                 onClose={() => setIsReviewOpen(false)}

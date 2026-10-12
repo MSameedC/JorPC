@@ -1,11 +1,13 @@
 import { create } from 'zustand';
-import type { CategoryKey, Part, CompatibilityStatus } from '../types/pc';
+import { REQUIRED_CATEGORIES, type CategoryKey, type Part, type CompatibilityStatus } from '../types/pc';
 
 interface BuildState {
     // State variables
     activeSlot: CategoryKey;
     selectedParts: Partial<Record<CategoryKey, Part>>;
     compatibility: CompatibilityStatus;
+    isComplete: () => boolean;
+    getMissingCategories: () => CategoryKey[];
 
     // Actions (Mutators)
     setActiveSlot: (slot: CategoryKey) => void;
@@ -21,6 +23,15 @@ export const useBuildStore = create<BuildState>((set, get) => ({
         isValid: true,
         message: 'Select components to check compatibility',
         estimatedWattage: 0,
+    },
+    isComplete: () => {
+        const parts = get().selectedParts;
+        return REQUIRED_CATEGORIES.every((cat) => !!parts[cat]);
+    },
+
+    getMissingCategories: () => {
+        const parts = get().selectedParts;
+        return REQUIRED_CATEGORIES.filter((cat) => !parts[cat]);
     },
 
     setActiveSlot: (slot) => set({ activeSlot: slot }),
