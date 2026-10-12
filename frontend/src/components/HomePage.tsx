@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
@@ -27,12 +26,6 @@ export const HomePage: React.FC = () => {
                     <p className="max-w-md mx-auto text-xl font-semibold text-slate-100">
                         Discover the latest hardware and build your perfect PC today.
                     </p>
-                    <Link
-                        to="/build"
-                        className="button"
-                    >
-                        Get Started
-                    </Link>
                 </div>
             </main>
 
